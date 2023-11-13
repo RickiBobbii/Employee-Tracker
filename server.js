@@ -207,7 +207,7 @@ async function addRole() {
 }
 
 //Function to Add an employee
-//Query all current Employees
+//Query all current Employee Roles
 const queryRoles = async () => {
   const query = 'SELECT title FROM roles';
   return new Promise((resolve, reject) => {
@@ -273,8 +273,66 @@ async function addEmployee() {
     })
 }
 
-
-
+//Function to Update an employee role
+//reuse queryRoles
+const queryEmployees = async () => {
+  const query = "SELECT * FROM employee";
+  return new Promise((resolve, reject) => {
+    db.query(query, (error, results) => {
+      if (error) reject(error);
+      resolve(results);
+    });
+  });
+};
+async function updateEmployeeRole() {
+  //employees query list
+  const allEmployees = await queryEmployees();
+  const choices = await queryRoles();
+  //console.log(choices);
+  //console.log(allEmployees)
+  inquirer
+    .prompt([
+      {
+        type: 'list',
+        name: 'employees',
+        message: 'Please select an Employee: ',
+        choices: allEmployees.map((choice)=> choice.first_name + ' ' + choice.last_name)
+      },
+      {
+        type: 'list',
+        name: 'role',
+        message: 'Please select ROLE for employee: ',
+        choices: choices.map((choice)=> choice.title)
+      },
+      
+    ])
+    .then((answers)=> {
+      //console.log(answers.role);
+      //Fetch id of role 
+      const fetchID = async () => {
+        const query = `SELECT id FROM roles WHERE title = '${answers.role}'`;
+        return new Promise((resolve, reject) => {
+          db.query(query, (error, results) => {
+            if (error) reject(error);
+            resolve(results);
+            //console.log(results);
+          });
+        });
+      };
+      //Query to insert values into employee table
+      async function employeesID() {
+          const employeeID = await fetchID();
+          //UPDATE employee role query
+          db.query(`UPDATE employee SET roles_id = '${employeeID[0].id}' WHERE CONCAT(first_name,' ', last_name) = '${answers.employees}'`,
+            function (err, res) {
+              if (err) throw err;
+              console.log(`Employee role has been UPDATED to ${answers.role}!`);
+              startPrompts();
+            })
+      }
+      employeesID();
+    })
+}
 
 app.listen(PORT, () =>
     console.log(`Server on port http://localhost:${PORT}`)
