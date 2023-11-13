@@ -123,8 +123,88 @@ function viewAllEmployees() {
   });
 }
 
-//Function to Add a department
+//Function to Add a department  --WORKS--
+function addDepartment() {
+  inquirer
+    .prompt({
+      type: 'input',
+      name: 'name',
+      message: 'Please enter a new Department name: '
+    })
+    .then((answers)=> {
+      console.log(answers.name);
+      db.query(`INSERT INTO department (department_name) VALUES ('${answers.name}')`,
+      function (err, res) {
+        if (err) throw err;
+        console.log(`${answers.name} department has been added to employees_db.`);
+        startPrompts();
+      })
+    })
+}
 
+//Function to Add a role
+
+//Query all current Departments, assisted with Bing AI --WORKS--
+const queryDepartments = async () => {
+  const query = 'SELECT department_name FROM department';
+  return new Promise((resolve, reject) => {
+    db.query(query, (error, results) => {
+      if (error) reject(error);
+      resolve(results);
+    });
+  });
+};
+
+async function addRole() {
+  const choices = await queryDepartments();
+  //console.log(choices);
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'name',
+        message: 'Please enter a new ROLE name: ',
+      },
+      {
+        type: 'input',
+        name: 'salary',
+        message: 'Please enter SALARY for that role: ',
+      },
+      {
+        type: 'list',
+        name: 'department',
+        message: 'Please enter DEPARTMENT for that role: ',
+        //map choices from current departments --WORKS--
+        choices: choices.map((choice)=> choice.department_name)
+      }
+    ])
+    .then((answers)=> {
+      //console.log(answers.name);
+      const fetchID = async () => {
+        const query = `SELECT id FROM department WHERE department_name = '${answers.department}'`;
+        return new Promise((resolve, reject) => {
+          db.query(query, (error, results) => {
+            if (error) reject(error);
+            resolve(results);
+            //console.log(results);
+          });
+        });
+      };
+      //console.log(fetchID());
+      //Testing id function
+      async function departmentID() {
+          const deptID = await fetchID();
+          //console.log(`department id attempt 1 ${deptID[0].id}`);
+          db.query(`INSERT INTO roles (title, salary, department_id) VALUES ('${answers.name}', '${answers.salary}', '${deptID[0].id}')`,
+            function (err, res) {
+              if (err) throw err;
+              console.log(`ROLE of ${answers.name} has been added to employees_db!`);
+              startPrompts();
+            })
+      }
+      departmentID();
+    })
+}
 
 app.listen(PORT, () =>
     console.log(`Server on port http://localhost:${PORT}`)
