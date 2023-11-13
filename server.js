@@ -81,14 +81,50 @@ function startPrompts() {
           updateEmployeeRole();
           break;
         case 'Exit':
-          db.end();
           console.log("Exited application");
-          break;
+          process.exit();
       }
     })
 }
 
 //TODOS write functions for selections
+
+//Function to view all departments
+function viewAllDepartments() {
+  db.query('SELECT * FROM department', function (err, results) {
+    if (err) throw err;
+    console.table(results);
+    startPrompts();
+  });
+}
+
+//Function to view all roles
+function viewAllRoles() {
+  db.query(`SELECT roles.title, roles.id, department.department_name, roles.salary FROM roles INNER JOIN department ON roles.department_id = department.id`,
+   function (err, results) {
+    if (err) throw err;
+    console.table(results);
+    startPrompts();
+  });
+}
+
+//Function to View all employees
+function viewAllEmployees() {
+  db.query(`SELECT e.id, e.first_name, e.last_name, r.title, d.department_name, r.salary, 
+  CONCAT(m.first_name, ' ', m.last_name) AS manager_name FROM employee e 
+  JOIN roles r ON e.roles_id = r.id 
+  JOIN department d ON r.department_id = d.id 
+  LEFT JOIN employee m ON e.manager_id = m.id
+  ORDER BY e.id`, 
+  function (err, results) {
+    if (err) throw err;
+    console.table(results);
+    startPrompts();
+  });
+}
+
+//Function to Add a department
+
 
 app.listen(PORT, () =>
     console.log(`Server on port http://localhost:${PORT}`)
