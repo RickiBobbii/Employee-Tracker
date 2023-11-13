@@ -206,6 +206,76 @@ async function addRole() {
     })
 }
 
+//Function to Add an employee
+//Query all current Employees
+const queryRoles = async () => {
+  const query = 'SELECT title FROM roles';
+  return new Promise((resolve, reject) => {
+    db.query(query, (error, results) => {
+      if (error) reject(error);
+      resolve(results);
+    });
+  });
+};
+
+async function addEmployee() {
+  const choices = await queryRoles();
+  //console.log(choices);
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'first',
+        message: 'Please enter a FIRST name: ',
+      },
+      {
+        type: 'input',
+        name: 'last',
+        message: 'Please enter a LAST name: ',
+      },
+      {
+        type: 'list',
+        name: 'role',
+        message: 'Please select ROLE for employee: ',
+        choices: choices.map((choice)=> choice.title)
+      },
+      {
+        type: 'list',
+        name: 'manager',
+        message: 'Please select MANAGER for employee: ',
+        choices: ['1','2']
+      }
+    ])
+    .then((answers)=> {
+      console.log(answers.first, answers.last, answers.role, answers.manager);
+      //Fetch id of role 
+      const fetchID = async () => {
+        const query = `SELECT id FROM roles WHERE title = '${answers.role}'`;
+        return new Promise((resolve, reject) => {
+          db.query(query, (error, results) => {
+            if (error) reject(error);
+            resolve(results);
+            //console.log(results);
+          });
+        });
+      };
+      //Query to insert values into employee table
+      async function rolesID() {
+          const roleID = await fetchID();
+          db.query(`INSERT INTO employee (first_name, last_name, roles_id, manager_id) VALUES ('${answers.first}', '${answers.last}', '${roleID[0].id}','${answers.manager}')`,
+            function (err, res) {
+              if (err) throw err;
+              console.log(`Employee ${answers.first, answers.last} has been added to employees_db!`);
+              startPrompts();
+            })
+      }
+      rolesID();
+    })
+}
+
+
+
+
 app.listen(PORT, () =>
     console.log(`Server on port http://localhost:${PORT}`)
 );
