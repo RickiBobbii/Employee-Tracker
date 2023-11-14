@@ -68,7 +68,7 @@ This application allows the user to access a database to view and manage the dep
 ## Credits
 
  1. This application is an assignment from module 12 from [The Ohio State University Coding Boot Camp](https://eng-bootcamps.osu.edu/).  The Acceptance Criteria above is from the challenge in module 12.
- 2. The queryDepartments function and decimal validation function were made with help from Bing AI.
+ 2. The queryDepartments function, viewAllEmployees query, and decimal validation function were made with help from Bing AI.
  3. Application uses console.table for a cleaner table look.  It already comes with node.js.  For more information on console.table [click here](https://www.w3schools.com/jsref/met_console_table.asp).
 
 ## Future Development
