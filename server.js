@@ -2,8 +2,9 @@ const express = require('express');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 require('dotenv').config();
+const cfonts = require('cfonts');
  
-
+//Express is here for possible future use
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -37,6 +38,22 @@ db.connect((err)=> {
   startPrompts();
 });
 
+//START fancy cfont app
+cfonts.say('The Office Database', {
+	font: 'block',              // define the font face
+	align: 'left',              // define text alignment
+	colors: ['system'],         // define all colors
+	background: 'transparent',  // define the background color, you can also use `backgroundColor` here as key
+	letterSpacing: 1,           // define letter spacing
+	lineHeight: 1,              // define the line height
+	space: true,                // define if the output text should have empty lines on top and on the bottom
+	maxLength: '0',             // define how many character can be on one line
+	gradient: false,            // define your two gradient colors
+	independentGradient: false, // define if you want to recalculate the gradient for each new line
+	transitionGradient: false,  // define if this is a transition between colors directly
+	env: 'node'                 // define the environment cfonts is being executed in
+});
+
 //INQUIRER function for the list options
 function startPrompts() {
   inquirer
@@ -44,7 +61,7 @@ function startPrompts() {
       {
         type: 'list',
         name: 'selections',
-        message: 'What would you like to do?',
+        message: 'WHAT WOULD YOU LIKE TO DO?',
         choices: [
           'View all departments',
           'View all roles',
@@ -87,7 +104,7 @@ function startPrompts() {
     })
 }
 
-//TODOS write functions for selections
+//Functions for selections below
 
 //Function to view all departments
 function viewAllDepartments() {
@@ -123,13 +140,14 @@ function viewAllEmployees() {
   });
 }
 
-//Function to Add a department  --WORKS--
+//Function to Add a department 
 function addDepartment() {
   inquirer
     .prompt({
       type: 'input',
       name: 'name',
-      message: 'Please enter a new Department name: '
+      message: 'Please enter a new Department name: ',
+      validate: (input)=>{ if(input){return true} else {return 'Please input a Department to continue.'}},
     })
     .then((answers)=> {
       console.log(answers.name);
@@ -144,7 +162,7 @@ function addDepartment() {
 
 //Function to Add a role
 
-//Query all current Departments, assisted with Bing AI --WORKS--
+//Query all current Departments, assisted with Bing AI
 const queryDepartments = async () => {
   const query = 'SELECT department_name FROM department';
   return new Promise((resolve, reject) => {
@@ -164,17 +182,31 @@ async function addRole() {
         type: 'input',
         name: 'name',
         message: 'Please enter a new ROLE name: ',
+        validate: (input)=>{ if(input){return true} else {return 'Please input a Role to continue.'}},
       },
       {
         type: 'input',
         name: 'salary',
         message: 'Please enter SALARY for that role: ',
+        //Decimal validate function made with help from Bing AI
+        validate: (input) => {
+          if (input) {
+            const regex = /^[0-9]+(\.[0-9]{1,2})?$/;
+              if (regex.test(input)) {
+                  return true;
+              } else {
+                  return 'Please input a number with up to 2 decimal places.';
+              }
+          } else {
+              return 'Please input a number to continue.';
+          }
+        }
       },
       {
         type: 'list',
         name: 'department',
         message: 'Please enter DEPARTMENT for that role: ',
-        //map choices from current departments --WORKS--
+        //MAP choices from current departments
         choices: choices.map((choice)=> choice.department_name)
       }
     ])
@@ -190,8 +222,7 @@ async function addRole() {
           });
         });
       };
-      //console.log(fetchID());
-      //Testing id function
+      //INSERT new role into roles table
       async function departmentID() {
           const deptID = await fetchID();
           //console.log(`department id attempt 1 ${deptID[0].id}`);
@@ -227,11 +258,13 @@ async function addEmployee() {
         type: 'input',
         name: 'first',
         message: 'Please enter a FIRST name: ',
+        validate: (input)=>{ if(input){return true} else {return 'Please input a First name to continue.'}},
       },
       {
         type: 'input',
         name: 'last',
         message: 'Please enter a LAST name: ',
+        validate: (input)=>{ if(input){return true} else {return 'Please input a Last name to continue.'}},
       },
       {
         type: 'list',
@@ -285,7 +318,7 @@ const queryEmployees = async () => {
   });
 };
 async function updateEmployeeRole() {
-  //employees query list
+  //Employees query list
   const allEmployees = await queryEmployees();
   const choices = await queryRoles();
   //console.log(choices);
@@ -319,10 +352,9 @@ async function updateEmployeeRole() {
           });
         });
       };
-      //Query to insert values into employee table
+      //Query to UPDATE employee Role into employee table
       async function employeesID() {
           const employeeID = await fetchID();
-          //UPDATE employee role query
           db.query(`UPDATE employee SET roles_id = '${employeeID[0].id}' WHERE CONCAT(first_name,' ', last_name) = '${answers.employees}'`,
             function (err, res) {
               if (err) throw err;
@@ -333,7 +365,7 @@ async function updateEmployeeRole() {
       employeesID();
     })
 }
-
-app.listen(PORT, () =>
-    console.log(`Server on port http://localhost:${PORT}`)
-);
+//Future optional Express use
+// app.listen(PORT, () =>
+//     console.log(`Server on port http://localhost:${PORT}`)
+// );
