@@ -63,7 +63,7 @@ This application allows the user to access a database to view and manage the dep
 
 ## Walkthrough Video
 
-[Click here]()
+[Click here](https://drive.google.com/file/d/1ugPf59JHwb14FwSc61juajd7U-MsCo3p/view)
 
 ## Credits
 
